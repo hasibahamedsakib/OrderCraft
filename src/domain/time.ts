@@ -68,7 +68,7 @@ export function zonedDate(time: Date | number | string, timeZone: string): strin
   return `${p.year}-${pad(p.month)}-${pad(p.day)}`;
 }
 
-/** ISO 8601 with the zone's offset, e.g. "2026-11-20T09:15:00+06:00". */
+/** ISO 8601 with the zone's offset, e.g. "2026-11-20T09:15:00+06:00" (milliseconds kept when non-zero). */
 export function toZonedIso(time: Date | number | string, timeZone: string): string {
   const ms = toEpochMs(time);
   const p = zonedParts(ms, timeZone);
@@ -76,8 +76,10 @@ export function toZonedIso(time: Date | number | string, timeZone: string): stri
   const offsetMinutes = Math.round((wallClockAsUtc - Math.floor(ms / 1000) * 1000) / 60_000);
   const sign = offsetMinutes >= 0 ? '+' : '-';
   const abs = Math.abs(offsetMinutes);
+  const millis = ((ms % 1000) + 1000) % 1000;
   return (
     `${p.year}-${pad(p.month)}-${pad(p.day)}T${pad(p.hour)}:${pad(p.minute)}:${pad(p.second)}` +
+    (millis ? `.${String(millis).padStart(3, '0')}` : '') +
     `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
   );
 }

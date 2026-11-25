@@ -109,3 +109,13 @@ describe('priceUnit / priceCart (Part C)', () => {
     expect(p.discount).toBeNull();
   });
 });
+
+describe('time helpers', () => {
+  it('formats server time in the shop zone and keeps milliseconds', async () => {
+    const { toZonedIso, zonedDate } = await import('./time');
+    expect(toZonedIso('2026-11-20T03:15:00Z', 'Asia/Dhaka')).toBe('2026-11-20T09:15:00+06:00');
+    expect(toZonedIso(Date.parse('2026-11-20T03:15:00.250Z'), 'Asia/Dhaka')).toBe('2026-11-20T09:15:00.250+06:00');
+    expect(Date.parse(toZonedIso(1_764_000_000_123, 'Asia/Dhaka'))).toBe(1_764_000_000_123);
+    expect(zonedDate('2026-11-20T19:30:00Z', 'Asia/Dhaka')).toBe('2026-11-21');
+  });
+});
