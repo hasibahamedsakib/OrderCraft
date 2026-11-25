@@ -466,7 +466,7 @@ export function createMockServer(options: MockServerOptions) {
   }
 
   function price(body: Partial<PriceRequest>): HttpResult<PriceResponse> {
-    const { state, now } = begin();
+    const { now } = begin();
     if (!Array.isArray(body.lines) || !body.lines.every((l) => isPositiveInt(l?.qty) && isSelection(l?.options))) {
       return fail(400, 'BAD_REQUEST', 'lines must be [{ qty, options }].');
     }

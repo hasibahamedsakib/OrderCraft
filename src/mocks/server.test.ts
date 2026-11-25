@@ -1,4 +1,4 @@
-import type { AddItemResponse, ApiErrorBody, CartSnapshot, CheckoutResponse } from '../api/contracts';
+import type { AddItemResponse, ApiErrorBody } from '../api/contracts';
 import { A, B, C, dhaka } from '../test/configs';
 import { createMockServer, SERVER_CLOCK_SKEW_MS, type HttpResult } from './server';
 import { memoryStorage, type KeyValueStorage } from './storage';
@@ -240,5 +240,3 @@ describe('mock server: price endpoint', () => {
   });
 });
 
-// keep types referenced for readers
-export type { CartSnapshot, CheckoutResponse };
