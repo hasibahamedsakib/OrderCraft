@@ -1,0 +1,32 @@
+.panel summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+  width: fit-content;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-2);
+}
+.group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.label {
+  min-width: 96px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.message {
+  color: var(--accent-text);
+}
