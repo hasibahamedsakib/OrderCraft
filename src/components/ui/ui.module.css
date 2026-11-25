@@ -1,0 +1,319 @@
+/* ---------- button ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    box-shadow var(--transition);
+}
+.button:disabled {
+  opacity: 0.55;
+}
+.sm {
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-size: 13px;
+}
+.md {
+  height: 38px;
+  padding: 0 var(--space-4);
+}
+.lg {
+  height: 46px;
+  padding: 0 var(--space-5);
+  font-size: 15px;
+}
+.block {
+  width: 100%;
+}
+.primary {
+  background: var(--navy-900);
+  color: var(--text-inverse);
+}
+.primary:hover:not(:disabled) {
+  background: var(--navy-800);
+}
+.accent {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.accent:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.secondary {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.secondary:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.ghost:hover:not(:disabled) {
+  background: rgb(15 23 42 / 0.05);
+  color: var(--text);
+}
+.danger {
+  background: transparent;
+  color: var(--danger);
+}
+.danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+  flex: none;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- badge ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.neutral {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.success {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--accent-border);
+}
+.warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+.dangerTone {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+.info {
+  background: var(--info-soft);
+  color: var(--info);
+  border-color: var(--info-border);
+}
+
+/* ---------- card ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.cardTitle {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.cardSubtitle {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.cardBody {
+  padding: var(--space-4) var(--space-5);
+}
+
+/* ---------- alert ---------- */
+.alert {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  font-size: 13px;
+}
+.alert > svg {
+  flex: none;
+  margin-top: 2px;
+}
+.alertBody {
+  flex: 1;
+  min-width: 0;
+}
+.alertTitle {
+  font-weight: 600;
+}
+.alertAction {
+  flex: none;
+  align-self: center;
+}
+
+/* ---------- quantity selector ---------- */
+.qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  overflow: hidden;
+}
+.qtyButton {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: background var(--transition);
+}
+.qtyButton:hover:not(:disabled) {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+.qtyButton:disabled {
+  color: var(--border-strong);
+}
+.qtyValue {
+  min-width: 32px;
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.qtySm .qtyButton {
+  width: 28px;
+  height: 28px;
+}
+.qtySm .qtyValue {
+  min-width: 26px;
+  font-size: 13px;
+}
+
+/* ---------- states ---------- */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-5);
+  color: var(--text-muted);
+}
+.stateIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+.stateIconDanger {
+  background: var(--danger-soft);
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+.stateTitle {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+}
+.stateText {
+  max-width: 360px;
+}
+.stateAction {
+  margin-top: var(--space-2);
+}
+
+.skeleton {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef0f3 0%, #f6f7f9 50%, #eef0f3 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- segmented / radio cards ---------- */
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-2);
+}
+.segment {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    border-color var(--transition),
+    background var(--transition);
+}
+.segment input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.segment:has(input:checked) {
+  border-color: var(--navy-900);
+  background: var(--navy-900);
+  color: var(--text-inverse);
+}
+.segment:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+.segment:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
