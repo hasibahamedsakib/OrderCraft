@@ -1,0 +1,321 @@
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- cart item ---------- */
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border);
+}
+.item:first-child {
+  padding-top: 0;
+}
+.itemEditing {
+  margin: 0 calc(-1 * var(--space-3));
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--info-soft);
+  border-bottom-color: transparent;
+}
+.itemExpired .itemTitle,
+.itemExpired .chips,
+.itemExpired .itemPrice {
+  opacity: 0.6;
+}
+.itemTop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+.itemTitle {
+  font-weight: 600;
+}
+.itemPrice {
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.itemTotal {
+  font-weight: 700;
+}
+.itemUnit {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.chip {
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.itemControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.itemActions {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+}
+.itemError {
+  font-size: 13px;
+  color: var(--danger);
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.itemError svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---------- reservation timer ---------- */
+.timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.timerTrack {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+  min-width: 60px;
+}
+.timerFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 1s linear;
+}
+.timerWarn {
+  color: var(--warning);
+}
+.timerWarn .timerFill {
+  background: #f79009;
+}
+.timerExpired {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* ---------- coupon ---------- */
+.coupon {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.couponRow {
+  display: flex;
+  gap: var(--space-2);
+}
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: border-color var(--transition);
+}
+.input::placeholder {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+.input:focus-visible {
+  border-color: var(--accent);
+}
+.couponApplied {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.couponText {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ---------- totals ---------- */
+.section {
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
+}
+.totals {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 8px;
+  column-gap: var(--space-4);
+}
+.totals dt {
+  color: var(--text-secondary);
+}
+.totals dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.discount {
+  color: var(--accent-text) !important;
+}
+.muted {
+  color: var(--text-muted) !important;
+}
+.payableLabel {
+  align-self: end;
+  font-weight: 650;
+  color: var(--text) !important;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.payableValue {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.rounding {
+  grid-column: 1 / -1;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -4px;
+}
+
+.checkout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ---------- inventory ---------- */
+.stockList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3) var(--space-4);
+}
+.stockItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.stockHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.stockName {
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+.stockValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.stockTrack {
+  height: 5px;
+  border-radius: 5px;
+  background: var(--border);
+  overflow: hidden;
+  display: flex;
+}
+.stockAvail {
+  background: var(--accent);
+}
+.stockReserved {
+  background: #93c5fd;
+}
+.stockZero .stockValue {
+  color: var(--danger);
+}
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+.legendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 650;
+  font-size: 15px;
+}
+.details summary::-webkit-details-marker {
+  display: none;
+}
+.details summary svg {
+  transition: transform var(--transition);
+}
+.details[open] summary svg:last-child {
+  transform: rotate(90deg);
+}
+.detailsBody {
+  margin-top: var(--space-4);
+}
+.summaryEnd {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
