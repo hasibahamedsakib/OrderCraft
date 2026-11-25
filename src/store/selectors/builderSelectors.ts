@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { CartItemDTO } from '../../api/contracts';
+import { groupStates, optionStates } from '../../domain/availability';
 import { formatShortages, freeStockFor, headroomByOption, shortagesFor } from '../../domain/stock';
 import { validate, type Violation } from '../../domain/validate';
 import type { RootState } from '../index';
@@ -74,6 +75,14 @@ export const selectShortageText = createSelector([selectDraftShortages, selectIn
 export const selectHeadroom = createSelector(
   [selectSelection, selectBuilderQty, selectGroups, selectBuilderFreeStock],
   (selection, qty, groups, free) => headroomByOption({ selection, qty, groups, free }),
+);
+
+export const selectGroupStates = createSelector([selectSelection, selectGroups, selectRules], groupStates);
+
+/** optionId -> qty, stock headroom, and whether/why it can't take one more unit. */
+export const selectOptionStates = createSelector(
+  [selectSelection, selectGroups, selectGroupStates, selectHeadroom],
+  optionStates,
 );
 
 export const selectCanSubmit = (state: RootState): boolean =>

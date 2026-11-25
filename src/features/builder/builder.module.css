@@ -1,0 +1,413 @@
+.builder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* ---------- product header ---------- */
+.productCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: linear-gradient(120deg, var(--navy-900) 0%, #17324a 100%);
+  color: var(--text-inverse);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.productEmoji {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  font-size: 26px;
+  flex: none;
+}
+.productName {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.productMeta {
+  color: #cbd5e1;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.productPrice {
+  margin-left: auto;
+  text-align: right;
+}
+.productPriceLabel {
+  color: #94a3b8;
+  font-size: 12px;
+}
+.productPriceValue {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- group ---------- */
+.group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition);
+}
+.groupInvalid {
+  border-color: var(--danger-border);
+}
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-3);
+  flex-wrap: wrap;
+}
+.groupTitle {
+  font-size: 15px;
+  font-weight: 650;
+}
+.groupHint {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.groupCounter {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.groupBody {
+  padding: 0 var(--space-5) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--space-3);
+}
+
+/* ---------- option card ---------- */
+.option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 92px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
+}
+label.option {
+  cursor: pointer;
+}
+label.option:hover:not(.optionDisabled) {
+  border-color: var(--border-strong);
+}
+.optionSelected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+label.optionSelected:hover:not(.optionDisabled) {
+  border-color: var(--accent);
+}
+.optionFlagged {
+  border-color: var(--danger);
+  box-shadow: inset 0 0 0 1px var(--danger);
+  background: var(--danger-soft);
+}
+.optionDisabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+label.optionDisabled {
+  cursor: not-allowed;
+}
+.option:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+.optionInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.optionTop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.optionName {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.optionPrice {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.optionBottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 28px;
+}
+.check {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: #fff;
+  transition:
+    background var(--transition),
+    border-color var(--transition);
+}
+.checkRadio {
+  border-radius: 50%;
+}
+.checkBox {
+  border-radius: 6px;
+}
+.optionSelected .check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---------- stock indicator ---------- */
+.stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.stockDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+.stockLow .stockDot {
+  background: #f79009;
+}
+.stockLow {
+  color: var(--warning);
+}
+.stockOut .stockDot {
+  background: var(--danger);
+}
+.stockOut {
+  color: var(--danger);
+  font-weight: 600;
+}
+.stockUnlimited .stockDot {
+  background: var(--border-strong);
+}
+
+/* ---------- validation ---------- */
+.messages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.message {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--danger);
+}
+.message svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---------- action bar ---------- */
+.bar {
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: 5;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.barStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.barStatusOk {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.barStatusBad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.barStatusWarn {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.barStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.barMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  flex-wrap: wrap;
+}
+.barField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.barLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.barPrice {
+  min-width: 170px;
+}
+.barTotal {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.barSub {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.barActions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.detailsToggle {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--accent-hover);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ---------- breakdown ---------- */
+.breakdown {
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: 1px dashed var(--border);
+  background: var(--surface-muted);
+}
+.rows {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 6px;
+  column-gap: var(--space-4);
+  font-size: 13px;
+}
+.rows dt {
+  color: var(--text-secondary);
+}
+.rows dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rowDiscount {
+  color: var(--accent-text) !important;
+}
+.rowStrong {
+  font-weight: 700;
+  color: var(--text) !important;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.priceStale {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 720px) {
+  .productCard {
+    padding: var(--space-4);
+  }
+  .productEmoji {
+    display: none;
+  }
+  .groupHeader {
+    padding: var(--space-3) var(--space-4) var(--space-2);
+  }
+  .groupBody {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+  .options {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+  .option {
+    padding: var(--space-3);
+  }
+  .barMain {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+  .barStatus {
+    padding: var(--space-3) var(--space-4);
+  }
+  .barActions {
+    width: 100%;
+  }
+  .barActions > * {
+    flex: 1;
+  }
+  .bar {
+    bottom: var(--space-2);
+  }
+}
+@media (max-width: 380px) {
+  .options {
+    grid-template-columns: 1fr;
+  }
+}

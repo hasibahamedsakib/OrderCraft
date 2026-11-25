@@ -65,11 +65,15 @@ export function describeSelection(selection: Selection, groups: MenuGroup[]): st
 export function describeLimits(group: MenuGroup, effectiveMax: number | null): string {
   const parts: string[] = [];
   if (effectiveMax !== null && group.min === effectiveMax) parts.push(`exactly ${group.min}`);
-  else if (effectiveMax === null) parts.push(group.min > 0 ? `at least ${group.min}` : 'any amount');
-  else if (group.min === 0) parts.push(`up to ${effectiveMax}`);
+  else if (effectiveMax === null) {
+    if (group.min > 0) parts.push(`at least ${group.min}`);
+  } else if (group.min === 0) parts.push(`up to ${effectiveMax}`);
   else parts.push(`${group.min}-${effectiveMax}`);
-  if (group.step && group.step > 1) parts[0] = `${parts[0]} in steps of ${group.step}`;
+  if (group.step && group.step > 1) {
+    if (parts.length > 0) parts[0] = `${parts[0]} in steps of ${group.step}`;
+    else parts.push(`in steps of ${group.step}`);
+  }
   if (group.maxDistinct !== undefined) parts.push(`max ${group.maxDistinct} different`);
   if (group.maxPerOption !== undefined) parts.push(`max ${group.maxPerOption} each`);
-  return parts.join(', ');
+  return parts.length > 0 ? parts.join(', ') : 'any amount';
 }
