@@ -1,0 +1,84 @@
+import { createSelector } from '@reduxjs/toolkit';
+import type { CartItemDTO } from '../../api/contracts';
+import { formatShortages, freeStockFor, headroomByOption, shortagesFor } from '../../domain/stock';
+import { validate, type Violation } from '../../domain/validate';
+import type { RootState } from '../index';
+import { selectAvailableStock, selectCartItems } from './cartSelectors';
+import { selectGroups, selectIngredients, selectRules } from './menuSelectors';
+
+export const selectSelection = (state: RootState) => state.builder.selection;
+export const selectBuilderQty = (state: RootState) => state.builder.qty;
+export const selectEditingItemId = (state: RootState) => state.builder.editingItemId;
+export const selectSubmit = (state: RootState) => state.builder.submit;
+export const selectPreview = (state: RootState) => state.builder.preview;
+
+/**
+ * What the builder is doing:
+ *  new           - building a new item
+ *  edit          - editing an active cart item (its own allocation counts as free)
+ *  edit-expired  - the item's reservation expired: changes are kept, saving adds a new item (D3)
+ *  edit-missing  - the item was removed (e.g. in another tab): saving adds a new item
+ */
+export type EditingContext =
+  | { mode: 'new' }
+  | { mode: 'edit'; item: CartItemDTO }
+  | { mode: 'edit-expired'; item: CartItemDTO }
+  | { mode: 'edit-missing'; itemId: string };
+
+export const selectEditingContext = createSelector(
+  [selectEditingItemId, selectCartItems],
+  (itemId, items): EditingContext => {
+    if (!itemId) return { mode: 'new' };
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return { mode: 'edit-missing', itemId };
+    return item.status === 'active' ? { mode: 'edit', item } : { mode: 'edit-expired', item };
+  },
+);
+
+export const selectViolations = createSelector([selectSelection, selectGroups, selectRules], (selection, groups, rules) =>
+  groups.length === 0 ? [] : validate(selection, groups, rules),
+);
+
+export const selectViolationsByGroup = createSelector([selectViolations], (violations) => {
+  const byGroup = new Map<string, Violation[]>();
+  for (const v of violations) {
+    const key = v.groupId ?? '_general';
+    byGroup.set(key, [...(byGroup.get(key) ?? []), v]);
+  }
+  return byGroup;
+});
+
+/** Stock this configuration may use: server-available + (when editing an active item) its own hold. */
+export const selectBuilderFreeStock = createSelector(
+  [selectAvailableStock, selectEditingContext],
+  (available, context) => freeStockFor(available, context.mode === 'edit' ? context.item.allocation : {}),
+);
+
+export const selectDraftShortages = createSelector(
+  [selectSelection, selectBuilderQty, selectGroups, selectAvailableStock, selectEditingContext],
+  (selection, qty, groups, available, context) =>
+    shortagesFor({
+      selection,
+      qty,
+      groups,
+      available,
+      ownAllocation: context.mode === 'edit' ? context.item.allocation : {},
+    }),
+);
+
+export const selectShortageText = createSelector([selectDraftShortages, selectIngredients], (shortages, ingredients) =>
+  formatShortages(shortages, ingredients),
+);
+
+/** optionId -> how many more units can be added right now (null = unlimited). */
+export const selectHeadroom = createSelector(
+  [selectSelection, selectBuilderQty, selectGroups, selectBuilderFreeStock],
+  (selection, qty, groups, free) => headroomByOption({ selection, qty, groups, free }),
+);
+
+export const selectCanSubmit = (state: RootState): boolean =>
+  state.menu.status === 'succeeded' &&
+  state.inventory.loaded &&
+  state.builder.submit.status !== 'pending' &&
+  selectViolations(state).length === 0 &&
+  selectDraftShortages(state).length === 0;
