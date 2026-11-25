@@ -14,7 +14,7 @@ export async function startMockServer(): Promise<void> {
   });
   const worker = setupWorker(...createHandlers(server));
   await worker.start({
-    onUnhandledRequest: 'bypass',
+    onUnhandledFrame: 'bypass',
     quiet: true,
     serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
   });
