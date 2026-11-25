@@ -1,6 +1,7 @@
 {
   "currency": "BDT",
   "moneyUnit": "poisha",
+  "timeZone": "Asia/Dhaka",
   "product": {
     "id": "breakfast",
     "name": "Build Your Breakfast",

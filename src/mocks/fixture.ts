@@ -5,6 +5,8 @@ import type { IngredientAmounts, Menu, PaymentMethod, Promotions, Selection } fr
 /** What the mock server is configured with. Swap the JSON to run a different menu. */
 export interface Fixture {
   currency: string;
+  /** Shop time zone used for order timestamps and "orders on a date". */
+  timeZone: string;
   menu: Menu;
   promotions: Promotions;
   paymentMethods: PaymentMethod[];
@@ -48,6 +50,7 @@ export function loadFixture(data: unknown = rawMenu): Fixture {
   const reservation = d.reservation as { ttlSeconds?: number } | undefined;
   return {
     currency: typeof d.currency === 'string' ? d.currency : 'BDT',
+    timeZone: typeof d.timeZone === 'string' ? d.timeZone : 'UTC',
     menu: {
       product: d.product as Menu['product'],
       ingredients: ingredients.map(({ id, name }) => ({ id, name })),
