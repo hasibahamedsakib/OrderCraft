@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   height: min(720px, calc(100vh - 220px));
+  height: min(720px, calc(100dvh - 220px));
   min-height: 460px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -53,11 +54,19 @@
   flex-direction: column;
   gap: var(--space-4);
   background: var(--surface-muted);
+  scroll-behavior: smooth;
 }
 .row {
   display: flex;
   gap: var(--space-2);
   max-width: 85%;
+  animation: message-in 180ms ease-out;
+}
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 .rowUser {
   align-self: flex-end;
@@ -115,18 +124,23 @@
   align-items: center;
   padding: 14px 16px;
 }
-.typing span {
+.dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--text-muted);
   animation: bounce 1.2s infinite ease-in-out;
 }
-.typing span:nth-child(2) {
+.dot:nth-child(2) {
   animation-delay: 0.15s;
 }
-.typing span:nth-child(3) {
+.dot:nth-child(3) {
   animation-delay: 0.3s;
+}
+.typingLabel {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 @keyframes bounce {
   0%,
@@ -174,6 +188,7 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   line-height: 1.4;
+  field-sizing: content; /* grows with Shift+Enter lines up to max-height, where supported */
 }
 .textarea:focus-visible {
   border-color: var(--accent);
@@ -208,6 +223,9 @@
     color var(--transition),
     background var(--transition);
 }
+.suggestion:disabled {
+  opacity: 0.55;
+}
 .suggestion:hover:not(:disabled) {
   border-color: var(--accent-border);
   color: var(--text);
@@ -217,6 +235,12 @@
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .log {
+    scroll-behavior: auto;
+  }
 }
 
 @media (max-width: 960px) {
@@ -237,7 +261,18 @@
 @media (max-width: 720px) {
   .panel {
     height: calc(100vh - 260px);
+    height: calc(100dvh - 260px);
     min-height: 420px;
+  }
+  /* one swipeable row of suggestions keeps the chat itself on screen */
+  .suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .suggestion {
+    flex: none;
+    white-space: nowrap;
   }
   .log {
     padding: var(--space-4);

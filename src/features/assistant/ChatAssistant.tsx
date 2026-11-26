@@ -26,6 +26,7 @@ export function ChatAssistant() {
   const orderCount = useAppSelector((state) => state.orders.items.length);
   const [draft, setDraft] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasKey = Boolean(geminiConfigFromEnv().apiKey);
 
   useEffect(() => {
@@ -43,6 +44,8 @@ export function ChatAssistant() {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     ask(draft);
+    // clicking Send leaves focus on a button that just became disabled; keep the user in the input
+    inputRef.current?.focus();
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -96,14 +99,20 @@ export function ChatAssistant() {
               </div>
             )}
             {messages.map((message) => (
-              <Message key={message.id} message={message} onRetry={(question, id) => dispatch(askAssistant({ question, retryOf: id }))} />
+              <Message
+                key={message.id}
+                message={message}
+                busy={pending}
+                onRetry={(question, id) => dispatch(askAssistant({ question, retryOf: id }))}
+              />
             ))}
             {pending && (
               <div className={s.row}>
-                <div className={cx(s.bubble, s.assistant, s.typing)} aria-label="Assistant is typing">
-                  <span />
-                  <span />
-                  <span />
+                <div className={cx(s.bubble, s.assistant, s.typing)} role="status" aria-label="Assistant is typing">
+                  <span className={s.dot} />
+                  <span className={s.dot} />
+                  <span className={s.dot} />
+                  <span className={s.typingLabel}>Checking the orders…</span>
                 </div>
               </div>
             )}
@@ -113,21 +122,25 @@ export function ChatAssistant() {
             <label htmlFor="chat-input" className="visually-hidden">
               Your question
             </label>
+            {/* stays editable while a reply is pending, so the next question can be typed; ask() blocks a second send */}
             <textarea
               id="chat-input"
+              ref={inputRef}
               className={s.textarea}
               rows={1}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="e.g. How many orders were paid by bKash?"
-              disabled={pending}
+              aria-describedby="chat-hint"
             />
-            <Button type="submit" variant="accent" icon={<SendIcon size={15} />} disabled={!draft.trim() || pending} aria-label="Send">
+            <Button type="submit" variant="accent" icon={<SendIcon size={15} />} disabled={!draft.trim() || pending}>
               Send
             </Button>
           </form>
-          <div className={s.hint}>Enter to send · Shift+Enter for a new line</div>
+          <div id="chat-hint" className={s.hint}>
+            Enter to send · Shift+Enter for a new line
+          </div>
         </section>
 
         <aside className={s.side}>
@@ -150,7 +163,14 @@ export function ChatAssistant() {
   );
 }
 
-function Message({ message, onRetry }: { message: ChatMessage; onRetry: (question: string, id: string) => void }) {
+interface MessageProps {
+  message: ChatMessage;
+  /** another question is in flight: Retry would be refused, so show it as unavailable */
+  busy: boolean;
+  onRetry: (question: string, id: string) => void;
+}
+
+function Message({ message, busy, onRetry }: MessageProps) {
   if (message.role === 'user') {
     return (
       <div className={cx(s.row, s.rowUser)}>
@@ -167,7 +187,13 @@ function Message({ message, onRetry }: { message: ChatMessage; onRetry: (questio
           {message.text}
           {retryable && (
             <div className={s.errorActions}>
-              <Button size="sm" variant="secondary" icon={<RefreshIcon size={14} />} onClick={() => onRetry(question, message.id)}>
+              <Button
+                size="sm"
+                variant="secondary"
+                icon={<RefreshIcon size={14} />}
+                onClick={() => onRetry(question, message.id)}
+                disabled={busy}
+              >
                 Retry
               </Button>
             </div>
