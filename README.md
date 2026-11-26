@@ -9,18 +9,18 @@ Stack: React 19, TypeScript (strict), Vite, Redux Toolkit, MSW (the server), Vit
 ```bash
 pnpm install
 cp .env.example .env.local      # paste VITE_GEMINI_API_KEY (Google AI Studio, free tier)
-pnpm dev                        # http://localhost:5173
+pnpm dev                        # http://localhost:3000
 ```
 
-| Command | What it does |
-|---|---|
-| `pnpm test` | All automated tests (Section 9 acceptance tests, engines, mock server, store, UI) |
-| `pnpm answers` | Prints the ANSWERS.md values from the real engines |
-| `pnpm typecheck` / `pnpm build` | Strict type check / production build |
+| Command                         | What it does                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `pnpm test`                     | All automated tests (Section 9 acceptance tests, engines, mock server, store, UI) |
+| `pnpm answers`                  | Prints the ANSWERS.md values from the real engines                                |
+| `pnpm typecheck` / `pnpm build` | Strict type check / production build                                              |
 
 There is no backend. MSW intercepts `/api/*` in the browser, and its data lives in `localStorage` (key `ordercraft.server.v1`). It survives a refresh, and every tab of the app shares it.
 
-Optional `VITE_GEMINI_MODEL` overrides the default model, `gemini-2.5-flash`.
+Optional `VITE_GEMINI_MODEL` overrides the default model, `gemini-3.1-flash-lite`. If a model is retired (404), overloaded (5xx) or takes longer than 20 s, the client tries `gemini-3.5-flash-lite`, `gemini-flash-lite-latest`, then `gemini-3.5-flash`.
 
 **Demo controls** (footer, "Demo controls (mock server)") let you move the server clock (10:59:30 / 11:00:00 / +4:50), force the next reservation to fail half-way, or reset all demo data. Use them to check TC-06/07, TC-14 and TC-15 by hand.
 
@@ -54,13 +54,13 @@ src/
 
 ### State ownership
 
-| State | Owner | Why |
-|---|---|---|
-| Menu, cart, stock, orders | Redux **mirror of the server** | Shared with other tabs. Replaced only by server responses, never updated optimistically. |
-| Configuration being built, price preview | Redux (`builder`) | Read by validation, stock headroom, preview and cart edit. Persisted so it survives a refresh. |
-| Chat messages | Redux (`chat`) | Kept when you switch views. The assistant reads orders from the store at question time. |
-| Server clock offset | Redux (`clock`) | Measured from every response's `serverTime`. |
-| Open panels, text inputs | Component state | Purely visual. |
+| State                                    | Owner                          | Why                                                                                            |
+| ---------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Menu, cart, stock, orders                | Redux **mirror of the server** | Shared with other tabs. Replaced only by server responses, never updated optimistically.       |
+| Configuration being built, price preview | Redux (`builder`)              | Read by validation, stock headroom, preview and cart edit. Persisted so it survives a refresh. |
+| Chat messages                            | Redux (`chat`)                 | Kept when you switch views. The assistant reads orders from the store at question time.        |
+| Server clock offset                      | Redux (`clock`)                | Measured from every response's `serverTime`.                                                   |
+| Open panels, text inputs                 | Component state                | Purely visual.                                                                                 |
 
 Business logic lives in `domain/`. Components read memoized selectors and dispatch actions. The same `validate` / `priceCart` / `shortagesFor` run in the browser (instant feedback) and in the mock server (the authority).
 

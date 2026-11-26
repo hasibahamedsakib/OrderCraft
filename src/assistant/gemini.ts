@@ -8,9 +8,15 @@ import { runTool, TOOL_DECLARATIONS, unanswerableResult, type ToolContext, type 
  *     If not answerable, reply with our own fixed text - the model never gets to improvise.
  */
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
-/** Google's moving alias for the newest Flash model, tried if the configured model is gone (404). */
-export const FALLBACK_GEMINI_MODEL = 'gemini-flash-latest';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite';
+/**
+ * Tried in order when the configured model is gone (404), overloaded (500/503) or does not
+ * answer in time. Older ids such as gemini-2.5-flash return 404 for new API keys, and the
+ * gemini-flash-latest alias can hang for minutes, so it is deliberately not in this list.
+ */
+export const FALLBACK_GEMINI_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.5-flash'];
+/** One request may not take longer than this before the next model is tried. */
+export const GEMINI_TIMEOUT_MS = 20_000;
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 /**
@@ -64,7 +70,7 @@ export function geminiConfigFromEnv(): GeminiConfig {
 
 interface GeminiPart {
   text?: string;
-  functionCall?: { name: string; args?: Record<string, unknown> };
+  functionCall?: { name: string; args?: Record<string, unknown>; id?: string };
   [key: string]: unknown;
 }
 
@@ -95,16 +101,30 @@ export function systemInstruction(ctx: ToolContext, today: string): string {
   ].join('\n');
 }
 
-async function generate(config: GeminiConfig, body: unknown, signal?: AbortSignal): Promise<GeminiResponse> {
+/** Thrown by one attempt when another model is worth trying (404, 5xx, timeout). */
+class TryNextModel extends Error {
+  readonly reason: AssistantError;
+  constructor(reason: AssistantError) {
+    super(reason.message);
+    this.reason = reason;
+  }
+}
+
+async function generateOnce(config: GeminiConfig, body: unknown, signal?: AbortSignal): Promise<GeminiResponse> {
+  const timeout = AbortSignal.timeout(GEMINI_TIMEOUT_MS);
+  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   let response: Response;
   try {
     response = await fetch(`${ENDPOINT}/${encodeURIComponent(config.model)}:generateContent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey ?? '' },
       body: JSON.stringify(body),
-      signal,
+      signal: combined,
     });
   } catch {
+    if (timeout.aborted && !signal?.aborted) {
+      throw new TryNextModel(new AssistantError('service', `Gemini (${config.model}) did not answer within ${GEMINI_TIMEOUT_MS / 1000}s. Please retry.`));
+    }
     throw new AssistantError('network', ERROR_MESSAGES.network);
   }
   if (response.ok) return (await response.json()) as GeminiResponse;
@@ -117,22 +137,47 @@ async function generate(config: GeminiConfig, body: unknown, signal?: AbortSigna
     detail = '';
   }
   if (response.status === 429) throw new AssistantError('quota', ERROR_MESSAGES.quota);
-  if (response.status === 404 && config.model !== FALLBACK_GEMINI_MODEL) {
-    // the configured model was retired or renamed: retry once on the moving Flash alias
-    return generate({ ...config, model: FALLBACK_GEMINI_MODEL }, body, signal);
+  if (response.status === 404) {
+    throw new TryNextModel(new AssistantError('unknown', `${ERROR_MESSAGES.unknown} (model ${config.model} is not available)`));
   }
   if (response.status === 401 || response.status === 403 || /API[_ ]KEY/i.test(detail)) {
     throw new AssistantError('invalid_key', ERROR_MESSAGES.invalid_key);
   }
-  if (response.status >= 500) throw new AssistantError('service', ERROR_MESSAGES.service);
+  if (response.status >= 500) throw new TryNextModel(new AssistantError('service', ERROR_MESSAGES.service));
   throw new AssistantError('unknown', `${ERROR_MESSAGES.unknown} (${response.status}${detail.trim() ? `: ${detail.trim()}` : ''})`);
 }
 
-function firstFunctionCall(res: GeminiResponse): { content: GeminiContent; call: { name: string; args: Record<string, unknown> } } | null {
+/**
+ * Calls the configured model, then each fallback, until one answers. Returns the model that
+ * answered so a follow-up call (which carries its thought signature) can go to the same one.
+ */
+async function generate(
+  config: GeminiConfig,
+  body: unknown,
+  signal?: AbortSignal,
+  useFallbacks = true,
+): Promise<{ response: GeminiResponse; model: string }> {
+  const models = useFallbacks ? [config.model, ...FALLBACK_GEMINI_MODELS.filter((m) => m !== config.model)] : [config.model];
+  let last: AssistantError = new AssistantError('service', ERROR_MESSAGES.service);
+  for (const model of models) {
+    try {
+      return { response: await generateOnce({ ...config, model }, body, signal), model };
+    } catch (error) {
+      if (!(error instanceof TryNextModel)) throw error;
+      last = error.reason;
+    }
+  }
+  throw last;
+}
+
+function firstFunctionCall(
+  res: GeminiResponse,
+): { content: GeminiContent; call: { name: string; args: Record<string, unknown>; id?: string } } | null {
   const content = res.candidates?.[0]?.content;
   const part = content?.parts?.find((p) => p.functionCall);
   if (!content || !part?.functionCall) return null;
-  return { content, call: { name: part.functionCall.name, args: part.functionCall.args ?? {} } };
+  const { name, args, id } = part.functionCall;
+  return { content, call: { name, args: args ?? {}, ...(id ? { id } : {}) } };
 }
 
 function textOf(res: GeminiResponse): string {
@@ -166,7 +211,7 @@ export async function askAssistant(
     { ...base, contents: [userTurn], toolConfig: { functionCallingConfig: { mode: 'ANY' } } },
     signal,
   );
-  const picked = firstFunctionCall(first);
+  const picked = firstFunctionCall(first.response);
   const result: ToolResult = picked ? runTool(picked.call.name, picked.call.args, ctx) : unanswerableResult();
 
   if (!picked || !result.answerable) {
@@ -175,19 +220,31 @@ export async function askAssistant(
 
   try {
     const second = await generate(
-      config,
+      { ...config, model: first.model }, // same model: the thought signature is model-specific
       {
         ...base,
         contents: [
           userTurn,
           picked.content, // returned as-is (keeps any thought signature)
-          { role: 'user', parts: [{ functionResponse: { name: result.name, response: result.data } }] },
+          {
+            role: 'user',
+            parts: [
+              {
+                functionResponse: {
+                  name: result.name,
+                  response: result.data,
+                  ...(picked.call.id ? { id: picked.call.id } : {}),
+                },
+              },
+            ],
+          },
         ],
         toolConfig: { functionCallingConfig: { mode: 'NONE' } },
       },
       signal,
+      false,
     );
-    const text = textOf(second);
+    const text = textOf(second.response);
     if (text) return { text, tool: { name: result.name, args: result.args }, phrasedBy: 'gemini' };
   } catch (error) {
     if (!(error instanceof AssistantError)) throw error;
