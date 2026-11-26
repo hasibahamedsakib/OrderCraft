@@ -136,7 +136,8 @@ export function OrderHistory() {
                           <span>
                             <span className={s.orderId}>{order.id}</span>
                             <span className={s.sub}>
-                              {order.lines.reduce((n, l) => n + l.qty, 0)} items{order.source === 'seed' ? ' · seed' : ''}
+                              {pluralItems(order.lines.reduce((n, l) => n + l.qty, 0))}
+                              {order.source === 'seed' ? ' · seed' : ''}
                             </span>
                           </span>
                         </button>
@@ -152,7 +153,7 @@ export function OrderHistory() {
                       </td>
                       <td data-label="Coupon">
                         {order.coupon ? (
-                          <CouponBadge coupon={order.coupon} discountAmount={order.totals.discount?.amount} />
+                          <CouponBadge coupon={order.coupon} discountAmount={order.totals.discount?.amount} past />
                         ) : order.totals.discount ? (
                           <Badge tone="success">{order.totals.discount.id}</Badge>
                         ) : (
@@ -216,4 +217,8 @@ function OrderDetail({ order, describe }: { order: StoredOrder; describe: (sel: 
       {order.coupon && order.coupon.status !== 'applied' && <p className={s.sub}>{order.coupon.message}</p>}
     </div>
   );
+}
+
+function pluralItems(count: number): string {
+  return count === 1 ? '1 item' : `${count} items`;
 }

@@ -77,6 +77,8 @@ export interface UpdateItemRequest {
 
 export interface SetCouponRequest {
   code: string | null;
+  /** Cart version the client saw; a stale tab gets 409 VERSION_CONFLICT instead of overwriting. */
+  baseVersion?: number;
 }
 
 export interface CheckoutRequest {

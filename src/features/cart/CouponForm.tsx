@@ -14,8 +14,21 @@ const STATUS: Record<CouponResult['status'], { tone: Tone; label: string }> = {
   unknown: { tone: 'danger', label: 'Invalid' },
 };
 
-export function CouponBadge({ coupon, discountAmount }: { coupon: CouponResult; discountAmount?: number }) {
-  const status = STATUS[coupon.status];
+/** In order history "now" is wrong: the coupon was outside its hours when that order was placed. */
+const PAST_LABELS: Partial<Record<CouponResult['status'], string>> = { outside_hours: 'Outside hours' };
+
+export function CouponBadge({
+  coupon,
+  discountAmount,
+  past = false,
+}: {
+  coupon: CouponResult;
+  discountAmount?: number;
+  /** Rendering a placed order rather than the live cart. */
+  past?: boolean;
+}) {
+  const base = STATUS[coupon.status];
+  const status = { ...base, label: (past && PAST_LABELS[coupon.status]) || base.label };
   return (
     <Badge tone={status.tone} title={coupon.message}>
       {coupon.code.toUpperCase()} · {status.label}

@@ -1,3 +1,4 @@
+import { msUntilClock } from './time';
 import { loadFixture } from '../mocks/fixture';
 import { A, B, C, dhaka } from '../test/configs';
 import { formatTaka, parseTaka, percentOf, roundHalfUpDiv, roundToWholeTaka } from './money';
@@ -117,5 +118,13 @@ describe('time helpers', () => {
     expect(toZonedIso(Date.parse('2026-11-20T03:15:00.250Z'), 'Asia/Dhaka')).toBe('2026-11-20T09:15:00.250+06:00');
     expect(Date.parse(toZonedIso(1_764_000_000_123, 'Asia/Dhaka'))).toBe(1_764_000_000_123);
     expect(zonedDate('2026-11-20T19:30:00Z', 'Asia/Dhaka')).toBe('2026-11-21');
+  });
+});
+
+describe('msUntilClock (coupon boundary scheduling)', () => {
+  it('counts to the next 11:00 in Asia/Dhaka on the server clock', () => {
+    expect(msUntilClock('2026-11-25T10:59:30+06:00', '11:00', 'Asia/Dhaka')).toBe(30_000);
+    expect(msUntilClock('2026-11-25T10:59:59.250+06:00', '11:00', 'Asia/Dhaka')).toBe(750);
+    expect(msUntilClock('2026-11-25T11:00:00+06:00', '11:00', 'Asia/Dhaka')).toBe(24 * 3600 * 1000);
   });
 });

@@ -9,7 +9,24 @@ import { runTool, TOOL_DECLARATIONS, unanswerableResult, type ToolContext, type 
  */
 
 export const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+/** Google's moving alias for the newest Flash model, tried if the configured model is gone (404). */
+export const FALLBACK_GEMINI_MODEL = 'gemini-flash-latest';
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+/**
+ * Declarations as sent to Gemini. A function without arguments is declared with no
+ * `parameters` at all: an OBJECT schema with empty `properties` can be rejected by the API.
+ */
+function declarationsForGemini() {
+  return TOOL_DECLARATIONS.map((decl) => {
+    const params = (decl as { parameters?: { properties?: Record<string, unknown> } }).parameters;
+    if (params && Object.keys(params.properties ?? {}).length === 0) {
+      const { parameters: _omit, ...rest } = decl as typeof decl & { parameters?: unknown };
+      return rest;
+    }
+    return decl;
+  });
+}
 
 export type AssistantErrorKind = 'missing_key' | 'invalid_key' | 'quota' | 'network' | 'service' | 'unknown';
 
@@ -100,6 +117,10 @@ async function generate(config: GeminiConfig, body: unknown, signal?: AbortSigna
     detail = '';
   }
   if (response.status === 429) throw new AssistantError('quota', ERROR_MESSAGES.quota);
+  if (response.status === 404 && config.model !== FALLBACK_GEMINI_MODEL) {
+    // the configured model was retired or renamed: retry once on the moving Flash alias
+    return generate({ ...config, model: FALLBACK_GEMINI_MODEL }, body, signal);
+  }
   if (response.status === 401 || response.status === 403 || /API[_ ]KEY/i.test(detail)) {
     throw new AssistantError('invalid_key', ERROR_MESSAGES.invalid_key);
   }
@@ -137,7 +158,7 @@ export async function askAssistant(
   const userTurn: GeminiContent = { role: 'user', parts: [{ text: question }] };
   const base = {
     systemInstruction: { parts: [{ text: systemInstruction(ctx, today) }] },
-    tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
+    tools: [{ functionDeclarations: declarationsForGemini() }],
   };
 
   const first = await generate(

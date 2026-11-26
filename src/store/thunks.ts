@@ -18,12 +18,16 @@ export const createAppAsyncThunk = createAsyncThunk.withTypes<{
  * A different epoch means the demo data was reset, so always accept.
  */
 export function isNewerSnapshot(
-  current: { epoch: string | null; version: number; serverTime: string | null },
+  current: { epoch: string | null; version: number; snapshotSentAt: number | null },
   incoming: CartSnapshot,
+  incomingSentAt: number,
 ): boolean {
   if (current.epoch !== incoming.cart.epoch) return true;
   if (incoming.cart.version !== current.version) return incoming.cart.version > current.version;
-  return current.serverTime === null || Date.parse(incoming.serverTime) >= Date.parse(current.serverTime);
+  // Same version: the cart did not change, but time-dependent parts did (expiry, coupon hours).
+  // The response to the request sent last wins. Ordering by the request's browser send time,
+  // not by serverTime, keeps this right when the server clock jumps backwards (demo clock).
+  return current.snapshotSentAt === null || incomingSentAt >= current.snapshotSentAt;
 }
 
 type ThunkApi = { dispatch: AppDispatch; getState: () => RootState };
@@ -34,7 +38,9 @@ function observe({ dispatch }: ThunkApi, timed: { serverTime: string; sentAt: nu
 
 function receive(thunk: ThunkApi, snapshot: CartSnapshot, timing: { sentAt: number; receivedAt: number }): void {
   observe(thunk, { serverTime: snapshot.serverTime, ...timing });
-  if (isNewerSnapshot(thunk.getState().cart, snapshot)) thunk.dispatch(cartSnapshotReceived(snapshot));
+  if (isNewerSnapshot(thunk.getState().cart, snapshot, timing.sentAt)) {
+    thunk.dispatch(cartSnapshotReceived(snapshot, timing.sentAt));
+  }
 }
 
 /** Error bodies often carry a fresh snapshot (stock moved, version conflict): apply it. */
@@ -153,7 +159,7 @@ export const removeCartItem = createAppAsyncThunk<void, { itemId: string }>(
 
 export const applyCoupon = createAppAsyncThunk<void, { code: string | null }>('cart/applyCoupon', async ({ code }, thunk) => {
   try {
-    const res = await api.setCoupon(code);
+    const res = await api.setCoupon(code, thunk.getState().cart.version);
     receive(thunk, res.data, timingOf(res));
   } catch (error) {
     receiveFromError(thunk, error);

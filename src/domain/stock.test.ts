@@ -7,6 +7,7 @@ import {
   freeStockFor,
   headroomByOption,
   shortagesFor,
+  shortagesForOneMore,
   stockLeftAfter,
   usageForItem,
 } from './stock';
@@ -39,6 +40,14 @@ describe('stock (Part B)', () => {
     const edited = { ...B, omelette: 3, fried: 1 };
     const shortages = shortagesFor({ selection: edited, qty: 1, groups, available: availableAfterCart, ownAllocation: allocB });
     expect(formatShortages(shortages, ingredients)).toBe('Short: 1 egg');
+  });
+
+  it('TC-09 in the builder: with Fried x1 + Omelette x2, one more Omelette is "Short: 1 egg"', () => {
+    const draft = { ...B, omelette: 2, fried: 1 };
+    const free = freeStockFor(availableAfterCart, allocB);
+    const left = stockLeftAfter(free, usageForItem(draft, 1, groups));
+    const omelette = groups.flatMap((g) => g.options).find((o) => o.id === 'omelette')!;
+    expect(formatShortages(shortagesForOneMore(omelette, left, 1), ingredients)).toBe('Short: 1 egg');
   });
 
   it('TC-10: edit B to Omelette x1 + Fried x3 -> allowed, 643.50, egg remaining 1', () => {

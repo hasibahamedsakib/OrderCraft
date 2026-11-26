@@ -13,6 +13,8 @@ interface MenuOptionCardProps {
   groupId: string;
   mode: SelectionMode;
   state: OptionState;
+  /** "Short: 1 egg" when stock blocks one more unit but some of it is still free. */
+  shortText?: string;
   /** Part of a violation right now (e.g. excluded combination). */
   flagged: boolean;
   /** Single-choice groups that allow none can be cleared by clicking again. */
@@ -30,6 +32,7 @@ export const MenuOptionCard = memo(function MenuOptionCard({
   groupId,
   mode,
   state,
+  shortText,
   flagged,
   allowDeselect,
   onSetQty,
@@ -44,7 +47,7 @@ export const MenuOptionCard = memo(function MenuOptionCard({
   );
   // Out of stock wins; otherwise explain a group limit; otherwise show stock headroom.
   const showReason = state.headroom !== 0 && state.blockedReason !== null && mode !== 'single';
-  const footerNote = showReason ? <span className={s.stock}>{state.blockedReason}</span> : <StockIndicator headroom={state.headroom} />;
+  const footerNote = showReason ? <span className={s.stock}>{state.blockedReason}</span> : <StockIndicator headroom={state.headroom} shortText={shortText} />;
 
   if (mode === 'stepper') {
     const disabled = !selected && !state.canIncrement;

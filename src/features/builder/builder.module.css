@@ -199,9 +199,10 @@ label.optionDisabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   font-size: 12px;
+  line-height: 1.3;
   color: var(--text-muted);
-  white-space: nowrap;
 }
 .stockDot {
   width: 7px;

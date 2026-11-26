@@ -78,7 +78,8 @@ export const api = {
     request<CartSnapshot>('PUT', `/api/cart/items/${encodeURIComponent(itemId)}`, body),
   removeItem: (itemId: string, baseVersion: number) =>
     request<CartSnapshot>('DELETE', `/api/cart/items/${encodeURIComponent(itemId)}?baseVersion=${baseVersion}`),
-  setCoupon: (code: string | null) => request<CartSnapshot>('PUT', '/api/cart/coupon', { code }),
+  setCoupon: (code: string | null, baseVersion: number) =>
+    request<CartSnapshot>('PUT', '/api/cart/coupon', { code, baseVersion }),
   checkout: (body: CheckoutRequest) => request<CheckoutResponse>('POST', '/api/checkout', body),
   getOrders: () => request<OrdersResponse>('GET', '/api/orders'),
   price: (body: PriceRequest, signal?: AbortSignal) => request<PriceResponse>('POST', '/api/price', body, signal),

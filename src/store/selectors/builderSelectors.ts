@@ -1,7 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { CartItemDTO } from '../../api/contracts';
 import { groupStates, optionStates } from '../../domain/availability';
-import { formatShortages, freeStockFor, headroomByOption, shortagesFor } from '../../domain/stock';
+import {
+  formatShortages,
+  freeStockFor,
+  headroomByOption,
+  shortagesFor,
+  shortagesForOneMore,
+  stockLeftAfter,
+  usageForItem,
+} from '../../domain/stock';
 import { validate, type Violation } from '../../domain/validate';
 import type { RootState } from '../index';
 import { selectAvailableStock, selectCartItems } from './cartSelectors';
@@ -77,7 +85,29 @@ export const selectHeadroom = createSelector(
   (selection, qty, groups, free) => headroomByOption({ selection, qty, groups, free }),
 );
 
-export const selectGroupStates = createSelector([selectSelection, selectGroups, selectRules], groupStates);
+/**
+ * optionId -> "Short: …" for options blocked by stock while some of the needed stock is
+ * still free (e.g. 1 egg left, Omelette needs 2). Options with nothing left at all are
+ * simply "Out of stock" and get no entry.
+ */
+export const selectOneMoreShortText = createSelector(
+  [selectSelection, selectBuilderQty, selectGroups, selectIngredients, selectBuilderFreeStock],
+  (selection, qty, groups, ingredients, free) => {
+    const left = stockLeftAfter(free, usageForItem(selection, qty, groups));
+    const out: Record<string, string> = {};
+    for (const group of groups) {
+      for (const option of group.options) {
+        const shortages = shortagesForOneMore(option, left, qty);
+        if (shortages.length > 0 && shortages.some((sh) => (left[sh.ingredientId] ?? 0) > 0)) {
+          out[option.id] = formatShortages(shortages, ingredients);
+        }
+      }
+    }
+    return out;
+  },
+);
+
+export const selectGroupStates =createSelector([selectSelection, selectGroups, selectRules], groupStates);
 
 /** optionId -> qty, stock headroom, and whether/why it can't take one more unit. */
 export const selectOptionStates = createSelector(

@@ -2,7 +2,12 @@ import { useCallback } from 'react';
 import { Badge, cx } from '../../components/ui';
 import type { MenuGroup as MenuGroupData } from '../../domain/types';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { selectGroupStates, selectOptionStates, selectViolationsByGroup } from '../../store/selectors/builderSelectors';
+import {
+  selectGroupStates,
+  selectOneMoreShortText,
+  selectOptionStates,
+  selectViolationsByGroup,
+} from '../../store/selectors/builderSelectors';
 import { optionQtySet, singleOptionPicked } from '../../store/slices/builderSlice';
 import { MenuOptionCard } from './MenuOptionCard';
 import { ValidationMessage } from './ValidationMessage';
@@ -14,6 +19,7 @@ export function MenuGroup({ group }: { group: MenuGroupData }) {
   const dispatch = useAppDispatch();
   const state = useAppSelector(selectGroupStates)[group.id];
   const optionStates = useAppSelector(selectOptionStates);
+  const shortTexts = useAppSelector(selectOneMoreShortText);
   const violations = useAppSelector(selectViolationsByGroup).get(group.id) ?? NO_VIOLATIONS;
   const flaggedIds = new Set(violations.flatMap((v) => (v.code === 'excludes' || v.code === 'group_max_per_option' ? v.optionIds ?? [] : [])));
 
@@ -67,6 +73,7 @@ export function MenuGroup({ group }: { group: MenuGroupData }) {
                 groupId={group.id}
                 mode={state.mode}
                 state={optionState}
+                shortText={optionState.headroom === 0 ? shortTexts[option.id] : undefined}
                 flagged={flaggedIds.has(option.id) && optionState.qty > 0}
                 allowDeselect={group.min === 0}
                 onSetQty={onSetQty}

@@ -107,6 +107,25 @@ export function headroomForOption(
   return headroom;
 }
 
+/**
+ * What is missing to add ONE more unit of `option` (x item qty), given the stock left after
+ * the draft. Used to explain a disabled option precisely: with 1 egg left, Omelette (2 eggs)
+ * is "Short: 1 egg", not simply "out of stock".
+ */
+export function shortagesForOneMore(
+  option: MenuOption,
+  stockLeftAfterDraft: IngredientAmounts,
+  itemQty: number,
+): Shortage[] {
+  const shortages: Shortage[] = [];
+  for (const [ingredientId, perUnit] of Object.entries(option.uses)) {
+    if (perUnit <= 0 || !(ingredientId in stockLeftAfterDraft)) continue;
+    const missing = perUnit * itemQty - Math.max(0, stockLeftAfterDraft[ingredientId] ?? 0);
+    if (missing > 0) shortages.push({ ingredientId, missing });
+  }
+  return shortages;
+}
+
 /** free - draft usage, per tracked ingredient (may go negative when short). */
 export function stockLeftAfter(free: IngredientAmounts, draftUsage: IngredientAmounts): IngredientAmounts {
   const out: IngredientAmounts = { ...free };

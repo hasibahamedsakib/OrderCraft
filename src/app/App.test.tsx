@@ -158,7 +158,7 @@ describe('Order builder UI', () => {
     expect(within(eggs).getAllByText('Out of stock')).toHaveLength(3);
     expect(within(eggs).getByRole('button', { name: 'Increase Fried' })).toBeDisabled();
 
-    await user.click(within(second).getByRole('button', { name: 'Increase Quantity' }));
+    await user.click(within(second).getByRole('button', { name: 'Increase Quantity of cart item 2' }));
     expect(within(second).getByRole('alert')).toHaveTextContent('Short: 2 egg, 2 cheese');
   });
 

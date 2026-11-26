@@ -62,6 +62,18 @@ export function parseClock(hhmm: string): number {
   return Number(match[1]) * 3600 + Number(match[2]) * 60;
 }
 
+/**
+ * Milliseconds from `time` until the wall clock in `timeZone` next reads `hhmm`
+ * (e.g. how long until 11:00 in Asia/Dhaka). Always > 0; at exactly 11:00 it is a day.
+ */
+export function msUntilClock(time: Date | number | string, hhmm: string, timeZone: string): number {
+  const ms = toEpochMs(time);
+  const intoSecond = ((ms % 1000) + 1000) % 1000;
+  let seconds = parseClock(hhmm) - secondsOfDay(ms, timeZone);
+  if (seconds <= 0) seconds += 24 * 3600;
+  return seconds * 1000 - intoSecond;
+}
+
 /** Local calendar date "YYYY-MM-DD" in the zone. */
 export function zonedDate(time: Date | number | string, timeZone: string): string {
   const p = zonedParts(time, timeZone);

@@ -225,6 +225,15 @@ describe('mock server: checkout and orders (Part E)', () => {
       'VERSION_CONFLICT',
     );
   });
+
+  it('Part G: a stale tab cannot silently overwrite the coupon', () => {
+    const { server } = setup();
+    const { snapshot } = body(add(server, A));
+    const stale = error(server.setCoupon({ code: 'MORNING15', baseVersion: snapshot.cart.version - 1 }));
+    expect(stale.code).toBe('VERSION_CONFLICT');
+    expect(body(server.getCart()).cart.couponCode).toBeNull();
+    expect(body(server.setCoupon({ code: 'MORNING15', baseVersion: snapshot.cart.version })).cart.couponCode).toBe('MORNING15');
+  });
 });
 
 describe('mock server: price endpoint', () => {

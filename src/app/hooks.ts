@@ -3,6 +3,7 @@ import { SERVER_STORAGE_KEY } from '../mocks/storage';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectActiveItems, selectClockOffset } from '../store/selectors/cartSelectors';
 import { fetchCart, fetchMenu, fetchOrders } from '../store/thunks';
+import { msUntilClock } from '../domain/time';
 import { estimateServerNow, msUntil } from './serverTime';
 
 export type View = 'order' | 'orders' | 'assistant';
@@ -82,4 +83,20 @@ export function useServerSync(): void {
     const id = window.setTimeout(() => void dispatch(fetchCart()), Math.max(0, next) + EXPIRY_GRACE_MS);
     return () => window.clearTimeout(id);
   }, [active, offset, dispatch]);
+
+  // An applied time-limited coupon (MORNING15 before 11:00) stops at a known server-clock moment:
+  // re-price the cart right then, so the summary never shows a discount the server would refuse.
+  const appliedCouponId = useAppSelector((state) =>
+    state.cart.pricing?.coupon?.status === 'applied' ? state.cart.pricing.discount?.id ?? null : null,
+  );
+  const coupon = useAppSelector((state) =>
+    state.menu.data?.promotions.cartDiscounts.find((d) => d.id === appliedCouponId && d.type === 'couponPercentOff'),
+  );
+  useEffect(() => {
+    if (!coupon || coupon.type !== 'couponPercentOff') return;
+    const wait = msUntilClock(estimateServerNow(offset), coupon.validBefore, coupon.timeZone);
+    if (wait > 2 ** 31 - 1) return; // beyond setTimeout's range; the poll covers it
+    const id = window.setTimeout(() => void dispatch(fetchCart()), wait + EXPIRY_GRACE_MS);
+    return () => window.clearTimeout(id);
+  }, [coupon, offset, dispatch]);
 }

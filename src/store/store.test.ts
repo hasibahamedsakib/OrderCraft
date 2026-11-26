@@ -171,11 +171,17 @@ describe('isNewerSnapshot', () => {
     ({ serverTime, cart: { epoch, version, couponCode: null, items: [] } }) as unknown as CartSnapshot;
 
   it('drops older snapshots and accepts resets', () => {
-    const current = { epoch: 'e1', version: 5, serverTime: '2026-11-25T09:00:10+06:00' };
-    expect(isNewerSnapshot(current, snap(4, '2026-11-25T09:00:20+06:00'))).toBe(false);
-    expect(isNewerSnapshot(current, snap(5, '2026-11-25T09:00:05+06:00'))).toBe(false);
-    expect(isNewerSnapshot(current, snap(5, '2026-11-25T09:00:15+06:00'))).toBe(true);
-    expect(isNewerSnapshot(current, snap(6, '2026-11-25T09:00:00+06:00'))).toBe(true);
-    expect(isNewerSnapshot(current, snap(0, '2026-11-25T09:00:00+06:00', 'e2'))).toBe(true);
+    const current = { epoch: 'e1', version: 5, snapshotSentAt: 1_000 };
+    expect(isNewerSnapshot(current, snap(4, '2026-11-25T09:00:20+06:00'), 2_000)).toBe(false);
+    // same version: the response to an earlier-sent request never replaces a later one
+    expect(isNewerSnapshot(current, snap(5, '2026-11-25T09:00:15+06:00'), 900)).toBe(false);
+    expect(isNewerSnapshot(current, snap(5, '2026-11-25T09:00:15+06:00'), 1_100)).toBe(true);
+    expect(isNewerSnapshot(current, snap(6, '2026-11-25T09:00:00+06:00'), 500)).toBe(true);
+    expect(isNewerSnapshot(current, snap(0, '2026-11-25T09:00:00+06:00', 'e2'), 500)).toBe(true);
+  });
+
+  it('accepts a fresh snapshot after the server clock moved backwards (TC-07 then TC-06)', () => {
+    const current = { epoch: 'e1', version: 5, snapshotSentAt: 1_000 }; // priced at 11:00:05
+    expect(isNewerSnapshot(current, snap(5, '2026-11-25T10:59:30+06:00'), 1_500)).toBe(true);
   });
 });

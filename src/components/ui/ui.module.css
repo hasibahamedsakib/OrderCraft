@@ -186,6 +186,7 @@
 /* ---------- quantity selector ---------- */
 .qty {
   display: inline-flex;
+  flex: none; /* never let a tight flex row squeeze the +/- buttons out of view */
   align-items: center;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);

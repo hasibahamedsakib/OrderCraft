@@ -396,6 +396,7 @@ export function createMockServer(options: MockServerOptions) {
 
   function setCoupon(body: Partial<SetCouponRequest>): HttpResult<CartSnapshot> {
     const { state, now } = begin();
+    if (body.baseVersion !== undefined && body.baseVersion !== state.version) return conflict(state, now);
     const code = typeof body.code === 'string' && body.code.trim() !== '' ? body.code.trim() : null;
     if (code !== state.couponCode) {
       state.couponCode = code;

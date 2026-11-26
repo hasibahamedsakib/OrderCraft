@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CartItemDTO } from '../../api/contracts';
 import { Badge, Button, cx, QuantitySelector } from '../../components/ui';
 import { AlertIcon, EditIcon, TrashIcon } from '../../components/ui/icons';
@@ -22,7 +22,14 @@ export function CartItem({ item, index }: { item: CartItemDTO; index: number }) 
   const ingredients = useAppSelector(selectIngredients);
   const op = useAppSelector((state) => state.cart.itemOps[item.id]);
   const editing = useAppSelector((state) => state.builder.editingItemId === item.id);
-  const [localShortage, setLocalShortage] = useState('');
+  // Quantity the user tried but stock could not cover. The "Short: …" text is derived live from
+  // it, so it follows stock changes (other items, other tabs) instead of freezing a stale message.
+  const [blockedQty, setBlockedQty] = useState<number | null>(null);
+  const localShortage = useAppSelector((state) =>
+    blockedQty === null ? '' : selectQtyChangeShortage(state, item.id, blockedQty),
+  );
+  // A saved edit, a renewed reservation or expiry makes the old attempt irrelevant.
+  useEffect(() => setBlockedQty(null), [item.qty, item.reservedAt, item.status]);
 
   const expired = item.status === 'expired';
   const pending = op?.status === 'pending';
@@ -33,7 +40,7 @@ export function CartItem({ item, index }: { item: CartItemDTO; index: number }) 
     dispatch(itemErrorDismissed(item.id));
     // Check stock first (own allocation counts as available), so the user sees exactly what is short.
     const shortage = qty > item.qty ? selectQtyChangeShortage(store.getState(), item.id, qty) : '';
-    setLocalShortage(shortage);
+    setBlockedQty(shortage ? qty : null);
     if (!shortage) void dispatch(changeItemQty({ itemId: item.id, qty }));
   };
 
@@ -74,7 +81,7 @@ export function CartItem({ item, index }: { item: CartItemDTO; index: number }) 
         {!expired && product && (
           <QuantitySelector
             size="sm"
-            label="Quantity"
+            label={`Quantity of cart item ${index + 1}`}
             value={item.qty}
             min={product.minQty}
             max={product.maxQty}

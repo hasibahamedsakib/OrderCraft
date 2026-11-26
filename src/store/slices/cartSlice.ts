@@ -13,6 +13,8 @@ export interface CartState {
   epoch: string | null;
   version: number;
   serverTime: string | null;
+  /** Browser time the request behind the current snapshot was sent (orders same-version snapshots). */
+  snapshotSentAt: number | null;
   items: CartItemDTO[];
   couponCode: string | null;
   pricing: CartPricing | null;
@@ -33,6 +35,7 @@ const initialState = (): CartState => ({
   epoch: null,
   version: 0,
   serverTime: null,
+  snapshotSentAt: null,
   items: [],
   couponCode: null,
   pricing: null,
@@ -54,7 +57,8 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(cartSnapshotReceived, (state, { payload }) => {
+      .addCase(cartSnapshotReceived, (state, { payload, meta }) => {
+        state.snapshotSentAt = meta.sentAt;
         state.epoch = payload.cart.epoch;
         state.version = payload.cart.version;
         state.serverTime = payload.serverTime;

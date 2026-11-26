@@ -2,7 +2,7 @@ import { cx } from '../../components/ui';
 import s from './builder.module.css';
 
 /** "How many more can be added right now", from shared stock. null = unlimited. */
-export function StockIndicator({ headroom }: { headroom: number | null }) {
+export function StockIndicator({ headroom, shortText }: { headroom: number | null; shortText?: string }) {
   if (headroom === null) {
     return (
       <span className={cx(s.stock, s.stockUnlimited)}>
@@ -15,7 +15,7 @@ export function StockIndicator({ headroom }: { headroom: number | null }) {
     return (
       <span className={cx(s.stock, s.stockOut)}>
         <span className={s.stockDot} aria-hidden="true" />
-        Out of stock
+        {shortText || 'Out of stock'}
       </span>
     );
   }
